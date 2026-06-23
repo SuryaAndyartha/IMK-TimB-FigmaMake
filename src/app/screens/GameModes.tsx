@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Clock, Users, Star } from "lucide-react";
+import { Clock, Users, Star, PlayCircle } from "lucide-react";
+import { useNavigate } from "react-router";
 import { useTheme } from "../contexts/ThemeContext";
 
 const categories = ["Semua", "Logika", "Memori", "Fokus", "Kecepatan"];
@@ -21,6 +22,9 @@ const allGames = [
     players: "12.4K",
     rating: 4.8,
     xp: 120,
+    // ── Route ke halaman game ──
+    route: "/app/games/memory-match",
+    available: true,
   },
   {
     id: 2,
@@ -37,6 +41,8 @@ const allGames = [
     players: "9.8K",
     rating: 4.9,
     xp: 200,
+    route: "/app/games/logic-puzzle",
+    available: true,
   },
   {
     id: 3,
@@ -53,6 +59,8 @@ const allGames = [
     players: "7.2K",
     rating: 4.7,
     xp: 350,
+    route: null,
+    available: false,
   },
   {
     id: 4,
@@ -69,6 +77,8 @@ const allGames = [
     players: "11.1K",
     rating: 4.6,
     xp: 150,
+    route: null,
+    available: false,
   },
   {
     id: 5,
@@ -85,6 +95,8 @@ const allGames = [
     players: "6.5K",
     rating: 4.5,
     xp: 180,
+    route: null,
+    available: false,
   },
   {
     id: 6,
@@ -101,6 +113,8 @@ const allGames = [
     players: "5.3K",
     rating: 4.8,
     xp: 300,
+    route: null,
+    available: false,
   },
   {
     id: 7,
@@ -117,6 +131,8 @@ const allGames = [
     players: "8.9K",
     rating: 4.9,
     xp: 280,
+    route: null,
+    available: false,
   },
   {
     id: 8,
@@ -133,17 +149,26 @@ const allGames = [
     players: "15.2K",
     rating: 4.7,
     xp: 100,
+    route: null,
+    available: false,
   },
 ];
 
 export function GameModes() {
   const [activeTab, setActiveTab] = useState("Semua");
   const { t } = useTheme();
+  const navigate = useNavigate();
 
   const filtered =
     activeTab === "Semua"
       ? allGames
       : allGames.filter((g) => g.category === activeTab);
+
+  const handlePlay = (game: typeof allGames[0]) => {
+    if (game.available && game.route) {
+      navigate(game.route);
+    }
+  };
 
   return (
     <div
@@ -220,8 +245,7 @@ export function GameModes() {
                   activeTab === cat
                     ? "linear-gradient(90deg, #7C3AED, #06B6D4)"
                     : t.categoryTabBg,
-                color:
-                  activeTab === cat ? "#fff" : t.categoryTabText,
+                color: activeTab === cat ? "#fff" : t.categoryTabText,
                 border:
                   activeTab === cat
                     ? "none"
@@ -260,6 +284,7 @@ export function GameModes() {
                   background: t.gamecardBg,
                   border: `1px solid ${t.gamecardBorder}`,
                   backdropFilter: "blur(12px)",
+                  opacity: game.available ? 1 : 0.75,
                 }}
               >
                 {/* Card top accent bar */}
@@ -283,15 +308,33 @@ export function GameModes() {
                     {/* Info */}
                     <div className="flex-1">
                       <div className="flex items-start justify-between mb-1">
-                        <h3
-                          style={{
-                            fontSize: 16,
-                            fontWeight: 700,
-                            color: t.gameNameColor,
-                          }}
-                        >
-                          {game.name}
-                        </h3>
+                        <div className="flex items-center gap-2">
+                          <h3
+                            style={{
+                              fontSize: 16,
+                              fontWeight: 700,
+                              color: t.gameNameColor,
+                            }}
+                          >
+                            {game.name}
+                          </h3>
+                          {/* Badge "Tersedia" hanya untuk game yang sudah ada demonya */}
+                          {game.available && (
+                            <span
+                              className="flex items-center gap-1 px-1.5 py-0.5 rounded-full"
+                              style={{
+                                fontSize: 9,
+                                fontWeight: 700,
+                                color: "#84CC16",
+                                background: "rgba(132,204,22,0.15)",
+                                border: "1px solid rgba(132,204,22,0.3)",
+                              }}
+                            >
+                              <PlayCircle size={9} />
+                              DEMO
+                            </span>
+                          )}
+                        </div>
                         <span
                           className="px-2 py-0.5 rounded-full flex-shrink-0 ml-2"
                           style={{
@@ -319,17 +362,13 @@ export function GameModes() {
                       <div className="flex items-center gap-3 mb-3">
                         <div className="flex items-center gap-1">
                           <Clock size={11} style={{ color: t.textMuted }} />
-                          <span
-                            style={{ fontSize: 11, color: t.textMuted }}
-                          >
+                          <span style={{ fontSize: 11, color: t.textMuted }}>
                             {game.time}
                           </span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Users size={11} style={{ color: t.textMuted }} />
-                          <span
-                            style={{ fontSize: 11, color: t.textMuted }}
-                          >
+                          <span style={{ fontSize: 11, color: t.textMuted }}>
                             {game.players}
                           </span>
                         </div>
@@ -362,16 +401,29 @@ export function GameModes() {
                       <button
                         className="w-full py-2.5 rounded-xl transition-all duration-200 active:scale-95"
                         style={{
-                          background: game.gradient,
-                          boxShadow: game.glow,
+                          background: game.available
+                            ? game.gradient
+                            : t.surface2,
+                          boxShadow: game.available ? game.glow : "none",
+                          border: game.available
+                            ? "none"
+                            : `1px solid ${t.surface2Border}`,
                           fontSize: 13,
                           fontWeight: 700,
-                          color: "#fff",
+                          color: game.available ? "#fff" : t.textMuted,
                           fontFamily: "Poppins, sans-serif",
                           letterSpacing: 0.3,
+                          cursor: game.available ? "pointer" : "not-allowed",
                         }}
+                        onClick={() => handlePlay(game)}
+                        disabled={!game.available}
+                        aria-label={
+                          game.available
+                            ? `Main ${game.name}`
+                            : `${game.name} belum tersedia`
+                        }
                       >
-                        🎮 Main Sekarang
+                        {game.available ? "🎮 Main Sekarang" : "🔒 Segera Hadir"}
                       </button>
                     </div>
                   </div>
