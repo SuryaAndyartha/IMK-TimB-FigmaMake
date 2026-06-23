@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import { ArrowLeft, Clock, RotateCcw, Star, Trophy, Zap } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
+import { PauseControl } from "../components/PauseControl";
 
 // ── Kartu emoji yang dipakai ──────────────────────────────────────────────────
 const EMOJI_POOL = ["🍎", "🍊", "🍋", "🍇", "🍓", "🫐", "🍑", "🥭"];
@@ -167,10 +168,26 @@ export function MemoryMatch() {
   const [isRunning, setIsRunning] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
   const [showResult, setShowResult] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
 
   const matchedCount = cards.filter((c) => c.isMatched).length;
   const totalPairs = EMOJI_POOL.length;
   const isComplete = matchedCount === totalPairs * 2;
+
+  const handlePause = () => {
+    setIsRunning(false); // hentikan timer
+    setIsPaused(true);
+  };
+
+  const handleResume = () => {
+    if (!isComplete) setIsRunning(true); // lanjutkan timer
+    setIsPaused(false);
+  };
+
+  const handleRestart = () => {
+    handleReplay(); // fungsi reset yang sudah ada
+    setIsPaused(false);
+  };
 
   // ── Timer ──
   useEffect(() => {
@@ -224,6 +241,7 @@ export function MemoryMatch() {
 
   const handleCardPress = useCallback(
     (card: Card) => {
+      if (isPaused) return; 
       if (isChecking) return;
       if (card.isFlipped || card.isMatched) return;
       if (flipped.length >= 2) return;
@@ -462,6 +480,13 @@ export function MemoryMatch() {
           />
         )}
       </AnimatePresence>
+
+    <PauseControl
+      onPause={handlePause}
+      onResume={handleResume}
+      onRestart={handleRestart}
+    />
+
     </div>
   );
 }
