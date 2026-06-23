@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Clock, Users, Star, PlayCircle } from "lucide-react";
 import { useNavigate } from "react-router";
 import { useTheme } from "../contexts/ThemeContext";
+import { TransitionLoader } from "../components/TransitionLoader";
 
 const categories = ["Semua", "Logika", "Memori", "Fokus", "Kecepatan"];
 
@@ -22,7 +23,6 @@ const allGames = [
     players: "12.4K",
     rating: 4.8,
     xp: 120,
-    // ── Route ke halaman game ──
     route: "/app/games/memory-match",
     available: true,
   },
@@ -159,15 +159,25 @@ export function GameModes() {
   const { t } = useTheme();
   const navigate = useNavigate();
 
+  // ── State loading ──────────────────────────────────────────────────────────
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("Memuat permainan...");
+
   const filtered =
     activeTab === "Semua"
       ? allGames
       : allGames.filter((g) => g.category === activeTab);
 
+  // ── Handle tombol main ─────────────────────────────────────────────────────
   const handlePlay = (game: typeof allGames[0]) => {
-    if (game.available && game.route) {
-      navigate(game.route);
-    }
+    if (!game.available || !game.route) return;
+
+    setLoadingMessage(`Memuat ${game.name}...`);
+    setIsLoading(true);
+
+    setTimeout(() => {
+      navigate(game.route!);
+    }, 1200);
   };
 
   return (
@@ -318,7 +328,6 @@ export function GameModes() {
                           >
                             {game.name}
                           </h3>
-                          {/* Badge "Tersedia" hanya untuk game yang sudah ada demonya */}
                           {game.available && (
                             <span
                               className="flex items-center gap-1 px-1.5 py-0.5 rounded-full"
@@ -433,6 +442,11 @@ export function GameModes() {
           </motion.div>
         </AnimatePresence>
       </div>
+
+      {/* ── TransitionLoader: tampil saat navigasi ke game ── */}
+      <AnimatePresence>
+        {isLoading && <TransitionLoader message={loadingMessage} />}
+      </AnimatePresence>
     </div>
   );
 }
