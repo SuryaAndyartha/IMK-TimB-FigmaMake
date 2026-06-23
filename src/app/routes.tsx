@@ -6,6 +6,8 @@ import { GameModes } from "./screens/GameModes";
 import { Performance } from "./screens/Performance";
 import { Leaderboard } from "./screens/Leaderboard";
 import { Settings } from "./screens/Settings";
+import { MemoryMatch } from "./screens/MemoryMatch";
+import { LogicPuzzle } from "./screens/LogicPuzzle";
 
 export const router = createBrowserRouter([
   {
@@ -22,9 +24,11 @@ export const router = createBrowserRouter([
     children: [
       { index: true, Component: Dashboard },
       { path: "games", Component: GameModes },
+      { path: "games/memory-match", Component: MemoryMatch },
       { path: "performance", Component: Performance },
       { path: "leaderboard", Component: Leaderboard },
       { path: "settings", Component: Settings },
+      { path: "games/logic-puzzle", Component: LogicPuzzle },
     ],
   },
   {
