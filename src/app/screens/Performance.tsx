@@ -15,6 +15,11 @@ import {
   Zap,
   Brain,
   Award,
+  CheckCircle2,
+  XCircle,
+  Star,
+  ThumbsUp,
+  Minus,
   type LucideIcon,
 } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
@@ -28,6 +33,45 @@ const weeklyData = [
   { day: "Sab", xp: 710, accuracy: 91 },
   { day: "Min", xp: 360, accuracy: 78 },
 ];
+
+// ── Accessibility: result config dengan ikon + warna + label ──────────────────
+const resultConfig: Record<
+  string,
+  { color: string; bg: string; border: string; icon: LucideIcon; label: string; ariaLabel: string }
+> = {
+  "Terbaik!": {
+    color: "#84CC16",
+    bg: "rgba(132,204,22,0.18)",
+    border: "rgba(132,204,22,0.35)",
+    icon: Star,
+    label: "Terbaik!",
+    ariaLabel: "Hasil terbaik",
+  },
+  Bagus: {
+    color: "#06B6D4",
+    bg: "rgba(6,182,212,0.15)",
+    border: "rgba(6,182,212,0.3)",
+    icon: ThumbsUp,
+    label: "Bagus",
+    ariaLabel: "Hasil bagus",
+  },
+  Oke: {
+    color: "#F59E0B",
+    bg: "rgba(245,158,11,0.15)",
+    border: "rgba(245,158,11,0.3)",
+    icon: CheckCircle2,
+    label: "Oke",
+    ariaLabel: "Hasil cukup",
+  },
+  Kurang: {
+    color: "#EF4444",
+    bg: "rgba(239,68,68,0.15)",
+    border: "rgba(239,68,68,0.3)",
+    icon: XCircle,
+    label: "Kurang",
+    ariaLabel: "Hasil kurang",
+  },
+};
 
 const recentGames = [
   {
@@ -124,9 +168,7 @@ function StatCard({
       >
         {value}
       </p>
-      <p
-        style={{ fontSize: 10, color: t.textSub, fontWeight: 500 }}
-      >
+      <p style={{ fontSize: 10, color: t.textSub, fontWeight: 500 }}>
         {label}
       </p>
       <p style={{ fontSize: 9, color, fontWeight: 600, marginTop: 2 }}>{sub}</p>
@@ -425,10 +467,7 @@ export function Performance() {
                   <stop offset="95%" stopColor="#06B6D4" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke={t.chartGrid}
-              />
+              <CartesianGrid strokeDasharray="3 3" stroke={t.chartGrid} />
               <XAxis
                 dataKey="day"
                 tick={{
@@ -487,87 +526,128 @@ export function Performance() {
         >
           🕹️ Riwayat Permainan
         </h2>
-        <div className="flex flex-col gap-2.5">
-          {recentGames.map((game, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, x: -16 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.07 }}
-              className="flex items-center gap-3 px-4 py-3 rounded-2xl"
-              style={{
-                background: t.recentGameBg,
-                border: `1px solid ${t.recentGameBorder}`,
-              }}
-            >
+
+        {/* ── Accessibility: legenda hasil ── */}
+        <div
+          className="flex gap-2 flex-wrap mb-3"
+          aria-label="Keterangan hasil permainan"
+        >
+          {Object.entries(resultConfig).map(([key, cfg]) => {
+            const Icon = cfg.icon;
+            return (
               <div
-                className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+                key={key}
+                className="flex items-center gap-1 px-2 py-1 rounded-full"
                 style={{
-                  background: `${game.color}22`,
-                  border: `1px solid ${game.color}40`,
+                  background: cfg.bg,
+                  border: `1px solid ${cfg.border}`,
                 }}
               >
-                <span style={{ fontSize: 22 }}>{game.emoji}</span>
-              </div>
-              <div className="flex-1">
-                <p
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: t.text,
-                    marginBottom: 2,
-                  }}
-                >
-                  {game.game}
-                </p>
-                <div className="flex items-center gap-3">
-                  <span style={{ fontSize: 11, color: t.textMuted }}>
-                    Akurasi {game.acc}%
-                  </span>
-                  <span style={{ fontSize: 11, color: t.textFaint }}>•</span>
-                  <span style={{ fontSize: 11, color: t.textMuted }}>
-                    {game.time}
-                  </span>
-                </div>
-              </div>
-              <div className="text-right">
-                <p
-                  style={{ fontSize: 14, fontWeight: 700, color: game.color }}
-                >
-                  {game.score}
-                </p>
-                <p
-                  style={{ fontSize: 11, color: "#A78BFA", fontWeight: 600 }}
-                >
-                  +{game.xp} XP
-                </p>
-              </div>
-              <div
-                className="px-2 py-0.5 rounded-full ml-1"
-                style={{
-                  background:
-                    game.result === "Terbaik!"
-                      ? "rgba(132,204,22,0.2)"
-                      : t.rankNumBg,
-                  border:
-                    game.result === "Terbaik!"
-                      ? "1px solid rgba(132,204,22,0.3)"
-                      : `1px solid ${t.surfaceDivider}`,
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: 10,
-                    fontWeight: 600,
-                    color:
-                      game.result === "Terbaik!" ? "#84CC16" : t.rankNumColor,
-                  }}
-                >
-                  {game.result}
+                <Icon size={10} style={{ color: cfg.color }} aria-hidden="true" />
+                <span style={{ fontSize: 10, color: cfg.color, fontWeight: 600 }}>
+                  {cfg.label}
                 </span>
               </div>
-            </motion.div>
-          ))}
+            );
+          })}
+        </div>
+
+        <div className="flex flex-col gap-2.5">
+          {recentGames.map((game, i) => {
+            const cfg = resultConfig[game.result] ?? resultConfig["Oke"];
+            const ResultIcon = cfg.icon;
+            return (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, x: -16 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.07 }}
+                className="flex items-center gap-3 px-4 py-3 rounded-2xl"
+                style={{
+                  background: t.recentGameBg,
+                  border: `1px solid ${t.recentGameBorder}`,
+                }}
+                role="listitem"
+                aria-label={`${game.game}: skor ${game.score}, ${cfg.ariaLabel}`}
+              >
+                {/* Game icon */}
+                <div
+                  className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{
+                    background: `${game.color}22`,
+                    border: `1px solid ${game.color}40`,
+                  }}
+                >
+                  <span style={{ fontSize: 22 }} aria-hidden="true">
+                    {game.emoji}
+                  </span>
+                </div>
+
+                {/* Info */}
+                <div className="flex-1">
+                  <p
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: t.text,
+                      marginBottom: 2,
+                    }}
+                  >
+                    {game.game}
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <span style={{ fontSize: 11, color: t.textMuted }}>
+                      Akurasi {game.acc}%
+                    </span>
+                    <span style={{ fontSize: 11, color: t.textFaint }}>•</span>
+                    <span style={{ fontSize: 11, color: t.textMuted }}>
+                      {game.time}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Score */}
+                <div className="text-right">
+                  <p
+                    style={{ fontSize: 14, fontWeight: 700, color: game.color }}
+                  >
+                    {game.score}
+                  </p>
+                  <p
+                    style={{ fontSize: 11, color: "#A78BFA", fontWeight: 600 }}
+                  >
+                    +{game.xp} XP
+                  </p>
+                </div>
+
+                {/* ── Accessibility: badge hasil dengan ikon + teks + warna ── */}
+                <div
+                  className="flex items-center gap-1 px-2 py-1 rounded-full ml-1 flex-shrink-0"
+                  style={{
+                    background: cfg.bg,
+                    border: `1px solid ${cfg.border}`,
+                  }}
+                  role="status"
+                  aria-label={cfg.ariaLabel}
+                >
+                  <ResultIcon
+                    size={11}
+                    style={{ color: cfg.color }}
+                    aria-hidden="true"
+                  />
+                  <span
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 700,
+                      color: cfg.color,
+                    }}
+                  >
+                    {cfg.label}
+                  </span>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </div>
