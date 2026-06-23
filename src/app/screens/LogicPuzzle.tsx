@@ -12,6 +12,7 @@ import {
   Lightbulb,
 } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
+import { PauseControl } from "../components/PauseControl";
 
 // ── Tipe soal ─────────────────────────────────────────────────────────────────
 type Puzzle = {
@@ -358,6 +359,7 @@ export function LogicPuzzle() {
   const [isRunning, setIsRunning] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [showHint, setShowHint] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
 
   const total = puzzles.length;
   const puzzle = puzzles[current];
@@ -371,6 +373,7 @@ export function LogicPuzzle() {
 
   const handleSelect = useCallback(
     (idx: number) => {
+      if (isPaused) return;
       if (revealed) return;
       if (!isRunning) setIsRunning(true);
       setSelected(idx);
@@ -418,6 +421,21 @@ export function LogicPuzzle() {
     const m = Math.floor(s / 60);
     const sec = s % 60;
     return `${m}:${sec.toString().padStart(2, "0")}`;
+  };
+
+  const handlePause = () => {
+    setIsRunning(false);
+    setIsPaused(true);
+  };
+
+  const handleResume = () => {
+    if (!showResult) setIsRunning(true);
+    setIsPaused(false);
+  };
+
+  const handleRestart = () => {
+    handleReplay(); // fungsi reset yang sudah ada
+    setIsPaused(false);
   };
 
   return (
@@ -711,6 +729,12 @@ export function LogicPuzzle() {
           />
         )}
       </AnimatePresence>
+
+    <PauseControl
+      onPause={handlePause}
+      onResume={handleResume}
+      onRestart={handleRestart}
+    />
     </div>
   );
 }
