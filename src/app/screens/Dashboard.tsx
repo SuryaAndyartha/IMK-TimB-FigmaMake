@@ -7,6 +7,9 @@ import {
   Zap,
   Trophy,
   Star,
+  TrendingUp,
+  TrendingDown,
+  Medal,
   type LucideIcon,
 } from "lucide-react";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
@@ -28,6 +31,8 @@ const gameModes = [
     difficulty: "Mudah",
     diffColor: "#84CC16",
     diffBg: "rgba(132,204,22,0.15)",
+    // ── Accessibility: ikon untuk tingkat kesulitan ──
+    diffIcon: "●",
     gradient: "linear-gradient(135deg, #06B6D4 0%, #0891B2 100%)",
     glow: "rgba(6,182,212,0.3)",
     xp: "+120 XP",
@@ -40,6 +45,7 @@ const gameModes = [
     difficulty: "Sedang",
     diffColor: "#F59E0B",
     diffBg: "rgba(245,158,11,0.15)",
+    diffIcon: "◆",
     gradient: "linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%)",
     glow: "rgba(124,58,237,0.3)",
     xp: "+200 XP",
@@ -52,6 +58,7 @@ const gameModes = [
     difficulty: "Sulit",
     diffColor: "#EF4444",
     diffBg: "rgba(239,68,68,0.15)",
+    diffIcon: "▲",
     gradient: "linear-gradient(135deg, #EC4899 0%, #BE185D 100%)",
     glow: "rgba(236,72,153,0.3)",
     xp: "+350 XP",
@@ -64,23 +71,27 @@ const gameModes = [
     difficulty: "Mudah",
     diffColor: "#84CC16",
     diffBg: "rgba(132,204,22,0.15)",
+    diffIcon: "●",
     gradient: "linear-gradient(135deg, #84CC16 0%, #65A30D 100%)",
     glow: "rgba(132,204,22,0.3)",
     xp: "+150 XP",
   },
 ];
 
+// ── Accessibility: rank badge config dengan ikon + label ──────────────────────
+const rankConfig: Record<
+  number,
+  { badge: string; icon: LucideIcon; label: string; iconColor: string }
+> = {
+  1: { badge: "🥇", icon: Trophy,    label: "Peringkat 1", iconColor: "#F59E0B" },
+  2: { badge: "🥈", icon: Medal,     label: "Peringkat 2", iconColor: "#94A3B8" },
+  3: { badge: "🥉", icon: Medal,     label: "Peringkat 3", iconColor: "#CD7F32" },
+};
+
 const leaderboardPreview = [
-  { rank: 1, name: "Sari Dewi", xp: "12,450", avatar: AVATAR2, badge: "🥇" },
-  {
-    rank: 2,
-    name: "Budi Santoso",
-    xp: "11,280",
-    avatar: AVATAR_URL,
-    badge: "🥈",
-    isMe: true,
-  },
-  { rank: 3, name: "Anisa Putri", xp: "10,890", avatar: AVATAR3, badge: "🥉" },
+  { rank: 1, name: "Sari Dewi",     xp: "12,450", avatar: AVATAR2,    badge: "🥇" },
+  { rank: 2, name: "Budi Santoso",  xp: "11,280", avatar: AVATAR_URL, badge: "🥈", isMe: true },
+  { rank: 3, name: "Anisa Putri",   xp: "10,890", avatar: AVATAR3,    badge: "🥉" },
 ];
 
 function StatCard({
@@ -91,6 +102,8 @@ function StatCard({
   color,
   bg,
   glow,
+  // ── Accessibility: tambah ariaLabel ──
+  ariaLabel,
 }: {
   icon: LucideIcon;
   label: string;
@@ -99,6 +112,7 @@ function StatCard({
   color: string;
   bg: string;
   glow: string;
+  ariaLabel?: string;
 }) {
   const { t } = useTheme();
   return (
@@ -113,10 +127,13 @@ function StatCard({
         backdropFilter: "blur(12px)",
         boxShadow: `0 4px 24px ${glow}`,
       }}
+      role="group"
+      aria-label={ariaLabel ?? label}
     >
       <div
         className="w-8 h-8 rounded-xl flex items-center justify-center mb-2"
         style={{ background: bg, boxShadow: `0 0 12px ${glow}` }}
+        aria-hidden="true"
       >
         <Icon size={16} style={{ color }} />
       </div>
@@ -129,6 +146,7 @@ function StatCard({
           lineHeight: 1,
           marginBottom: 2,
         }}
+        aria-label={`${value} ${label}`}
       >
         {value}
       </p>
@@ -143,17 +161,25 @@ function StatCard({
         {label}
       </p>
       {sub && (
-        <p
-          style={{
-            fontFamily: "Poppins, sans-serif",
-            fontSize: 9,
-            color,
-            fontWeight: 600,
-            marginTop: 2,
-          }}
-        >
-          {sub}
-        </p>
+        <div className="flex items-center gap-1 mt-1">
+          {/* ── Accessibility: ikon tren naik/turun ── */}
+          {sub.startsWith("↑") && (
+            <TrendingUp size={9} style={{ color }} aria-hidden="true" />
+          )}
+          {sub.startsWith("↓") && (
+            <TrendingDown size={9} style={{ color }} aria-hidden="true" />
+          )}
+          <p
+            style={{
+              fontFamily: "Poppins, sans-serif",
+              fontSize: 9,
+              color,
+              fontWeight: 600,
+            }}
+          >
+            {sub}
+          </p>
+        </div>
       )}
     </motion.div>
   );
@@ -195,6 +221,7 @@ export function Dashboard() {
             "radial-gradient(circle, rgba(124,58,237,0.18) 0%, transparent 70%)",
           filter: "blur(40px)",
         }}
+        aria-hidden="true"
       />
 
       {/* Status Bar */}
@@ -202,7 +229,7 @@ export function Dashboard() {
         <span style={{ color: t.statusText, fontSize: 13, fontWeight: 600 }}>
           09:41
         </span>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5" aria-hidden="true">
           <div className="flex gap-[3px] items-end">
             {[3, 5, 7, 9].map((h, i) => (
               <div
@@ -256,26 +283,30 @@ export function Dashboard() {
             Budi Santoso! 👋
           </h1>
           <div className="flex items-center gap-1.5 mt-1.5">
+            {/* ── Accessibility: level badge dengan ikon ── */}
             <div
               className="flex items-center gap-1 px-2 py-0.5 rounded-full"
               style={{
                 background: "rgba(124,58,237,0.2)",
                 border: "1px solid rgba(124,58,237,0.3)",
               }}
+              aria-label="Level 12"
             >
-              <Star size={10} style={{ color: "#A78BFA" }} />
+              <Star size={10} style={{ color: "#A78BFA" }} aria-hidden="true" />
               <span style={{ fontSize: 11, color: "#A78BFA", fontWeight: 600 }}>
                 Level 12
               </span>
             </div>
+            {/* ── Accessibility: streak badge dengan ikon api ── */}
             <div
               className="flex items-center gap-1 px-2 py-0.5 rounded-full"
               style={{
                 background: "rgba(132,204,22,0.15)",
                 border: "1px solid rgba(132,204,22,0.3)",
               }}
+              aria-label="Streak 7 hari berturut-turut"
             >
-              <Flame size={10} style={{ color: "#84CC16" }} />
+              <Flame size={10} style={{ color: "#84CC16" }} aria-hidden="true" />
               <span
                 style={{ fontSize: 11, color: "#84CC16", fontWeight: 600 }}
               >
@@ -291,8 +322,9 @@ export function Dashboard() {
               background: t.iconBtnBg,
               border: `1px solid ${t.iconBtnBorder}`,
             }}
+            aria-label="Notifikasi — ada notifikasi baru"
           >
-            <Bell size={18} style={{ color: t.textSub }} />
+            <Bell size={18} style={{ color: t.textSub }} aria-hidden="true" />
             <div
               className="absolute top-1 right-1 rounded-full"
               style={{
@@ -301,6 +333,7 @@ export function Dashboard() {
                 background: "#EF4444",
                 boxShadow: "0 0 6px #EF4444",
               }}
+              aria-hidden="true"
             />
           </button>
           <div
@@ -314,7 +347,7 @@ export function Dashboard() {
           >
             <ImageWithFallback
               src={AVATAR_URL}
-              alt="Avatar"
+              alt="Foto profil Budi Santoso"
               className="w-full h-full object-cover"
             />
           </div>
@@ -329,11 +362,11 @@ export function Dashboard() {
             background: "rgba(124,58,237,0.12)",
             border: "1px solid rgba(124,58,237,0.25)",
           }}
+          role="group"
+          aria-label="Progres XP menuju Level 13"
         >
           <div className="flex justify-between items-center mb-2">
-            <span
-              style={{ fontSize: 12, color: t.textSub, fontWeight: 500 }}
-            >
+            <span style={{ fontSize: 12, color: t.textSub, fontWeight: 500 }}>
               Menuju Level 13
             </span>
             <span style={{ fontSize: 12, color: "#A78BFA", fontWeight: 600 }}>
@@ -343,6 +376,11 @@ export function Dashboard() {
           <div
             className="w-full rounded-full overflow-hidden"
             style={{ height: 8, background: t.xpBarTrack }}
+            role="progressbar"
+            aria-valuenow={4280}
+            aria-valuemin={0}
+            aria-valuemax={5000}
+            aria-label="4280 dari 5000 XP"
           >
             <motion.div
               initial={{ width: "0%" }}
@@ -369,6 +407,7 @@ export function Dashboard() {
           color="#06B6D4"
           bg="rgba(6,182,212,0.2)"
           glow="rgba(6,182,212,0.15)"
+          ariaLabel="Total XP: 4280, naik 320 hari ini"
         />
         <StatCard
           icon={Flame}
@@ -378,6 +417,7 @@ export function Dashboard() {
           color="#F59E0B"
           bg="rgba(245,158,11,0.2)"
           glow="rgba(245,158,11,0.15)"
+          ariaLabel="Streak saat ini 7 hari, terbaik 14 hari"
         />
         <StatCard
           icon={Trophy}
@@ -387,6 +427,7 @@ export function Dashboard() {
           color="#A78BFA"
           bg="rgba(124,58,237,0.2)"
           glow="rgba(124,58,237,0.15)"
+          ariaLabel="Peringkat ke-42, masuk top 5 persen"
         />
       </div>
 
@@ -400,13 +441,16 @@ export function Dashboard() {
             onClick={() => navigate("/app/games")}
             className="flex items-center gap-0.5"
             style={{ color: "#A78BFA", fontSize: 13, fontWeight: 600 }}
+            aria-label="Lihat semua mode permainan"
           >
-            Lihat semua <ChevronRight size={14} />
+            Lihat semua <ChevronRight size={14} aria-hidden="true" />
           </button>
         </div>
         <div
           className="flex gap-3 overflow-x-auto px-5 pb-2"
           style={{ scrollbarWidth: "none" }}
+          role="list"
+          aria-label="Daftar mode permainan"
         >
           {gameModes.map((game, i) => (
             <motion.div
@@ -421,6 +465,7 @@ export function Dashboard() {
                 border: `1px solid ${t.gamecardBorder}`,
                 backdropFilter: "blur(12px)",
               }}
+              role="listitem"
             >
               <div
                 className="w-11 h-11 rounded-xl flex items-center justify-center mb-3"
@@ -428,6 +473,7 @@ export function Dashboard() {
                   background: game.gradient,
                   boxShadow: `0 4px 16px ${game.glow}`,
                 }}
+                aria-hidden="true"
               >
                 <span style={{ fontSize: 22 }}>{game.emoji}</span>
               </div>
@@ -451,19 +497,25 @@ export function Dashboard() {
                 {game.desc}
               </p>
               <div className="flex items-center justify-between">
+                {/* ── Accessibility: badge kesulitan dengan simbol bentuk + warna ── */}
                 <span
-                  className="px-2 py-0.5 rounded-full"
+                  className="px-2 py-0.5 rounded-full flex items-center gap-1"
                   style={{
                     fontSize: 10,
                     fontWeight: 600,
                     color: game.diffColor,
                     background: game.diffBg,
                   }}
+                  aria-label={`Tingkat kesulitan: ${game.difficulty}`}
                 >
+                  <span aria-hidden="true" style={{ fontSize: 7 }}>
+                    {game.diffIcon}
+                  </span>
                   {game.difficulty}
                 </span>
                 <span
                   style={{ fontSize: 10, color: "#A78BFA", fontWeight: 600 }}
+                  aria-label={`Reward ${game.xp}`}
                 >
                   {game.xp}
                 </span>
@@ -479,6 +531,7 @@ export function Dashboard() {
                   fontFamily: "Poppins, sans-serif",
                 }}
                 onClick={() => navigate("/app/games")}
+                aria-label={`Main ${game.name}`}
               >
                 Main →
               </button>
@@ -497,8 +550,9 @@ export function Dashboard() {
             onClick={() => navigate("/app/leaderboard")}
             className="flex items-center gap-0.5"
             style={{ color: "#A78BFA", fontSize: 13, fontWeight: 600 }}
+            aria-label="Lihat semua leaderboard"
           >
-            Lihat semua <ChevronRight size={14} />
+            Lihat semua <ChevronRight size={14} aria-hidden="true" />
           </button>
         </div>
         <div
@@ -508,82 +562,102 @@ export function Dashboard() {
             border: `1px solid ${t.surface2Border}`,
             backdropFilter: "blur(12px)",
           }}
+          role="list"
+          aria-label="Peringkat teratas"
         >
-          {leaderboardPreview.map((user, i) => (
-            <div
-              key={user.rank}
-              className="flex items-center gap-3 px-4 py-3"
-              style={{
-                borderBottom:
-                  i < leaderboardPreview.length - 1
-                    ? `1px solid ${t.leaderboardRowBorder}`
-                    : "none",
-                background: user.isMe ? t.myRowBg : "transparent",
-              }}
-            >
-              <span
-                style={{ fontSize: 18, width: 24, textAlign: "center" }}
-              >
-                {user.badge}
-              </span>
+          {leaderboardPreview.map((user, i) => {
+            const rankCfg = rankConfig[user.rank as 1 | 2 | 3];
+            const RankIcon = rankCfg.icon;
+            return (
               <div
-                className="rounded-full overflow-hidden flex-shrink-0"
+                key={user.rank}
+                className="flex items-center gap-3 px-4 py-3"
                 style={{
-                  width: 36,
-                  height: 36,
-                  border: user.isMe
-                    ? "2px solid #7C3AED"
-                    : `2px solid ${t.surfaceBorder}`,
+                  borderBottom:
+                    i < leaderboardPreview.length - 1
+                      ? `1px solid ${t.leaderboardRowBorder}`
+                      : "none",
+                  background: user.isMe ? t.myRowBg : "transparent",
                 }}
+                role="listitem"
+                aria-label={`${rankCfg.label}: ${user.name}, ${user.xp} XP${user.isMe ? " (kamu)" : ""}`}
               >
-                <ImageWithFallback
-                  src={user.avatar}
-                  alt={user.name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="flex-1">
-                <p
+                {/* ── Accessibility: ikon medali + emoji + nomor ── */}
+                <div
+                  className="flex items-center justify-center flex-shrink-0"
+                  style={{ width: 28 }}
+                  aria-hidden="true"
+                >
+                  <RankIcon
+                    size={18}
+                    style={{ color: rankCfg.iconColor }}
+                  />
+                </div>
+
+                <div
+                  className="rounded-full overflow-hidden flex-shrink-0"
                   style={{
-                    fontSize: 13,
-                    fontWeight: user.isMe ? 700 : 600,
-                    color: user.isMe ? "#A78BFA" : t.text,
+                    width: 36,
+                    height: 36,
+                    border: user.isMe
+                      ? "2px solid #7C3AED"
+                      : `2px solid ${t.surfaceBorder}`,
                   }}
                 >
-                  {user.name}{" "}
-                  {user.isMe && (
-                    <span style={{ fontSize: 10, color: "#A78BFA" }}>
-                      (Kamu)
-                    </span>
-                  )}
-                </p>
-                <p style={{ fontSize: 11, color: t.textMuted }}>
-                  {user.xp} XP
-                </p>
-              </div>
-              <div
-                className="px-2.5 py-1 rounded-full"
-                style={{
-                  background: user.isMe
-                    ? "rgba(124,58,237,0.25)"
-                    : t.rankNumBg,
-                  border: user.isMe
-                    ? "1px solid rgba(124,58,237,0.4)"
-                    : `1px solid ${t.surfaceBorder}`,
-                }}
-              >
-                <span
+                  <ImageWithFallback
+                    src={user.avatar}
+                    alt={`Foto profil ${user.name}`}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+
+                <div className="flex-1">
+                  <p
+                    style={{
+                      fontSize: 13,
+                      fontWeight: user.isMe ? 700 : 600,
+                      color: user.isMe ? "#A78BFA" : t.text,
+                    }}
+                  >
+                    {user.name}{" "}
+                    {user.isMe && (
+                      <span style={{ fontSize: 10, color: "#A78BFA" }}>
+                        (Kamu)
+                      </span>
+                    )}
+                  </p>
+                  <p style={{ fontSize: 11, color: t.textMuted }}>
+                    {user.xp} XP
+                  </p>
+                </div>
+
+                {/* ── Accessibility: rank badge dengan ikon + nomor + teks ── */}
+                <div
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-full"
                   style={{
-                    fontSize: 12,
-                    fontWeight: 700,
-                    color: user.isMe ? "#A78BFA" : t.rankNumColor,
+                    background: user.isMe
+                      ? "rgba(124,58,237,0.25)"
+                      : t.rankNumBg,
+                    border: user.isMe
+                      ? "1px solid rgba(124,58,237,0.4)"
+                      : `1px solid ${t.surfaceBorder}`,
                   }}
+                  aria-hidden="true"
                 >
-                  #{user.rank}
-                </span>
+                  <span style={{ fontSize: 14 }}>{user.badge}</span>
+                  <span
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 700,
+                      color: user.isMe ? "#A78BFA" : t.rankNumColor,
+                    }}
+                  >
+                    #{user.rank}
+                  </span>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
