@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 import { useTheme } from "../contexts/ThemeContext";
+import { CognitiveResultCard } from "../components/CognitiveResultCard";
 
 const AVATAR_URL =
   "https://images.unsplash.com/photo-1565016941625-2bee25d37f72?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx5b3VuZyUyMGFzaWFuJTIwbWFuJTIwc3R1ZGVudCUyMGF2YXRhciUyMHBvcnRyYWl0fGVufDF8fHx8MTc3ODU1ODczM3ww&ixlib=rb-4.1.0&q=80&w=400";
@@ -89,7 +90,7 @@ const rankConfig: Record<
 };
 
 const leaderboardPreview = [
-  { rank: 1, name: "Sari Dewi",     xp: "12,450", avatar: AVATAR2,    badge: "🥇" },
+  { rank: 1, name: "Sari Dewi",    xp: "12,450", avatar: AVATAR2,    badge: "🥇" },
   { rank: 2, name: "Budi Santoso",  xp: "11,280", avatar: AVATAR_URL, badge: "🥈", isMe: true },
   { rank: 3, name: "Anisa Putri",   xp: "10,890", avatar: AVATAR3,    badge: "🥉" },
 ];
@@ -428,6 +429,14 @@ export function Dashboard() {
           bg="rgba(124,58,237,0.2)"
           glow="rgba(124,58,237,0.15)"
           ariaLabel="Peringkat ke-42, masuk top 5 persen"
+        />
+      </div>
+
+      {/* REVISI: Rekomendasi Hasil Evaluasi Kognitif */}
+      <div className="px-5">
+        <CognitiveResultCard 
+          recommendedCategory="Logika" 
+          gameName="Logic Puzzle" 
         />
       </div>
 
